@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Otel Fiyat Karşılaştırma</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f5f2;--card:#fff;--tx:#1d1d1b;--mu:#6b6b66;--bd:#e3e1db;--ac:#0f6e56;--acbg:#e1f5ee;--hi:#fff6d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--card:#222220;--tx:#eeede8;--mu:#a3a29b;--bd:#3a3936;--ac:#5dcaa5;--acbg:#0b3b2e;--hi:#3d3410}}
+:root[data-theme="dark"]{--bg:#171716;--card:#222220;--tx:#eeede8;--mu:#a3a29b;--bd:#3a3936;--ac:#5dcaa5;--acbg:#0b3b2e;--hi:#3d3410}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mu);margin:0 0 20px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}
+select,input[type=date]{width:100%;padding:10px;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:480px){.row{grid-template-columns:1fr}}
+.file{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=file]{font:inherit;font-size:14px;max-width:100%}
+#st{font-size:13px;color:var(--mu)}
+.big{font-size:32px;font-weight:700;color:var(--ac);margin:4px 0}
+.chip{display:inline-block;background:var(--acbg);color:var(--ac);border-radius:99px;padding:2px 10px;font-size:13px;margin-right:6px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{font-size:12px;color:var(--mu);font-weight:600}
+td.n,th.n{text-align:right}
+tr.sel td{background:var(--hi);font-weight:600}
+.mu{color:var(--mu)}.up{color:#c0392b}.dn{color:var(--ac)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Otel Fiyat Karşılaştırma</h1>
+<p class="sub">Şehri, oteli ve ayı seç; aynı şehirdeki oteller ucuzdan pahalıya sıralansın. Fiyatlar 2026-2027 listesinden alınmıştır (kişi başı, çift kişilik odada).</p>
+
+<div class="card" id="form">
+  <label for="c">Şehir</label>
+  <select id="c" disabled><option>Önce şehir seçiniz</option></select>
+  <div style="margin-top:12px"><label for="h">Otel</label><select id="h" disabled><option>Önce şehir seçiniz</option></select></div>
+  <div style="margin-top:12px"><label for="m">Ay</label><select id="m" disabled><option>Önce şehir seçiniz</option></select></div>
+</div>
+
+<div id="out"></div>
+</main>
+
+<script>
+var HOTELS=[["ANTALYA","THE MARMARA ANTALYA"],["ANTALYA","RAMADA PLAZA ANTALYA"],["ANTALYA","RENEX"],["ANTALYA","OZKAYMAK FALEZ"],["ANTALYA","DOUBLE TREE ANTALYA CITY"],["ANTALYA","HOLIDAY INN LARA"],["ANTALYA","B BUSINESS"],["ANTALYA","CROWNE PLAZA ANTALYA"],["ISTANBUL","DOUBLE TREE AVCILAR"],["ISTANBUL","BARCELO ISTANBUL"],["ISTANBUL","GRAND HARILTON"],["ISTANBUL","PARK INN RADISSON AIRPORT"],["ISTANBUL","LIONEL HOTEL"],["ISTANBUL","DELTA MARRIOTT WEST"],["ISTANBUL","RAMADA TEKSTILKENT"],["ISTANBUL","GONEN ISTANBUL YENIBOSNA"],["ISTANBUL","WISH MORE BAYRAMPASA"],["ISTANBUL","DOUBLE TREE PIYALEPASA"],["ISTANBUL","CLARION MAHMUTBEY"],["ISTANBUL","WINDSOR BAYRAMPASA"],["ISTANBUL","WYNDHAM GRAND EUROPE"],["ISTANBUL","RAMADA MERTER"],["ISTANBUL","RADISSON MERTER"],["ISTANBUL","SHERATON ESENYURT"],["ISTANBUL","G HOTEL GUNESLI"],["ISTANBUL","WANDA VISTA"],["ISTANBUL","ELITE WORLD BASINEKSPRES"],["ISTANBUL","LA QUINTA BY WYNDHAM BASINEKSPRES"],["ISTANBUL","PULLMAN HOTEL"],["ISTANBUL","TRYP BY WYNDHAM BASINEKSPRES"],["CANAKKALE","KOLIN"],["CANAKKALE","PARION"],["CANAKKALE","DOUBLE TREE CANAKKALE"],["AYVALIK","GRAND TEMIZEL"],["AYVALIK","MUSHO HOTEL 4*"],["KUSADASI","RAMADA RESORT KUSADASI 5*"],["KUSADASI","RAMADA SUITS"],["KUSADASI","SEVEN FOR LIFE"],["KUSADASI","ODELIA RESORT"],["KUSADASI","DOUBLE TREE KUSADASI"],["KUSADASI","GRAND BELISH KUSADASI"],["KUSADASI","ELITE WORLD KUSADASI"],["KUSADASI","CHARISMA"],["KUSADASI","QLUSIVE HOTEL"],["KUSADASI","KORUMAR"],["IZMIR","KAYA THERMAL IZMIR"],["IZMIR","RADISSON ALIAGA"],["PAMUKKALE","RICHMOND THERMAL"],["PAMUKKALE","PAM THERMAL"],["PAMUKKALE","KAYA THERMAL PAMUKKALE"],["PAMUKKALE","HIERAPARK THERMAL"],["PAMUKKALE","LYCUS RIVER"],["PAMUKKALE","COLOSSAE THERMAL"],["PAMUKKALE","ADEMPIRA"],["PAMUKKALE","DOGA THERMAL"],["PAMUKKALE","POLAT THERMAL"],["PAMUKKALE","TRIPOLIS"],["KONYA","GRAND KONYA"],["KONYA","ANEMON KONYA"],["KONYA","BAYIR DIOMAND"],["KONYA","NOVOTEL KONYA"],["ANKARA","NEWPARK"],["ANKARA","İÇKALE"],["ANKARA","MEYRA HOTEL"],["ANKARA","RADISSON BLU ANKARA CANKAYA"],["ANKARA","HILTON GARDEN INN ANKARA"],["ANKARA","ALEGRIA BUSINESS"],["ANKARA","CONNECT THERMAL"],["KAPADOKYA","CRYSTAL KAYMAKLI"],["KAPADOKYA","CROWNE PLAZA CAPPADOCIA"],["KAPADOKYA","BARCELO CAPPADOCIA"],["KAPADOKYA","SUHAN CAPPADOCIA"],["KAPADOKYA","AVRASYA"],["KAPADOKYA","PERISSIA"],["KAPADOKYA","MUSTAFA OTEL"],["KAPADOKYA","DINLER URGUP"],["KAPADOKYA","MARRIOTT CAPPADOCIA"],["KAPADOKYA","EMIN KOCAK"],["KAPADOKYA","ALERIA CAPPADOCIA"],["KAPADOKYA CAVE","YUNAK CAVE"],["KAPADOKYA CAVE","HANEDAN CAVE"],["KAPADOKYA CAVE","CAPPADOCIA ESTATES"],["KAPADOKYA CAVE","SUNAK CAVE"],["KAPADOKYA CAVE","FOSIL CAVE"],["KAPADOKYA CAVE","MDC"],["KAPADOKYA CAVE","DEDELI CAVE"],["KAPADOKYA CAVE","ARTIUM CAVE"],["KAPADOKYA CAVE","KONAK BEZIRHANE"],["KAPADOKYA CAVE","TURBEL CAVE ( MUSKARA)"],["KAPADOKYA CAVE","LOST CITY"],["KAPADOKYA CAVE","CHARM OF CAPPADOCIA"],["KAPADOKYA CAVE","UNDER CAVE"],["KAPADOKYA CAVE","CAPPA VILLA"],["KAPADOKYA CAVE","TEMENNI EVI"],["KAPADOKYA CAVE","NUJELM CAVE"],["KAPADOKYA CAVE","DREAMS CAVE"],["KAPADOKYA CAVE","DILEK KAYA"],["KAPADOKYA CAVE","GARDEN INN CAPPADOCIA"],["FETHIYE","GARCIA RESORT"],["FETHIYE","ALESTA YACHT"],["FETHIYE","ATAPARK"],["FETHIYE","MARINA BOUTIQUE"],["BOLU","BÜYÜK ABANT OTELİ"],["BOLU","VON RESORT"],["BOLU","HAMTON BY HILTON BOLU"],["BOLU","KORU HOTEL"],["SAFRANBOLU","HILTON GARDEN INN SAFRANBOLU"],["SAFRANBOLU","EBRULU KONAK"],["SAFRANBOLU","BEYZADE KONAK"],["SAFRANBOLU","HIDIRLIK KONAGI"],["SAFRANBOLU","BAĞLARSARAY KONAK"],["SAFRANBOLU","ÇEŞMELİ KONAK"],["SAFRANBOLU","ZALIFRE KONAK"],["BURSA","EUROPARK BURSA"],["BURSA","VINDULA"],["BURSA","BAIA BURSA"],["BURSA","CELIK PALAS"],["BURSA","MOVENPICK"],["BURSA","HILTON BURSA"],["MANISA","DOUBLE TREE MANISA"],["MANISA","ANEMON MANISA"],["ESKİŞEHİR","QUESTA THERMAL"],["ESKİŞEHİR","ANEMON ESKİŞEHİR"],["ESKİŞEHİR","RAMADA ESKISEHIR"],["AFYON","NG AFYON"],["AFYON","WYNDHAM AFYON"],["AFYON","ORUCOGLU THERMAL"]];
+var RAW=[["ANTALYA","THE MARMARA ANTALYA",20758,20787,70.0,""],["ANTALYA","THE MARMARA ANTALYA",20788,20908,60.0,""],["ANTALYA","THE MARMARA ANTALYA",20909,20938,80.0,""],["ANTALYA","THE MARMARA ANTALYA",20939,20969,90.0,""],["ANTALYA","THE MARMARA ANTALYA",20970,20999,105.0,""],["ANTALYA","THE MARMARA ANTALYA",21000,21091,120.0,""],["ANTALYA","THE MARMARA ANTALYA",21092,21122,110.0,""],["ANTALYA","THE MARMARA ANTALYA",21123,21152,70.0,""],["ANTALYA","THE MARMARA ANTALYA",21153,21183,60.0,""],["ANTALYA","RAMADA PLAZA ANTALYA",20758,20764,68.0,"EUR"],["ANTALYA","RAMADA PLAZA ANTALYA",20765,20778,89.0,"EUR"],["ANTALYA","RAMADA PLAZA ANTALYA",20779,20785,66.0,"EUR"],["ANTALYA","RAMADA PLAZA ANTALYA",20786,20820,82.0,"EUR"],["ANTALYA","RAMADA PLAZA ANTALYA",20821,20908,72.0,"EUR"],["ANTALYA","RENEX",20758,20787,50.0,""],["ANTALYA","RENEX",20788,20877,45.0,""],["ANTALYA","RENEX",20878,20908,50.0,""],["ANTALYA","OZKAYMAK FALEZ",20758,20787,80.0,""],["ANTALYA","OZKAYMAK FALEZ",20788,20817,40.0,""],["ANTALYA","DOUBLE TREE ANTALYA CITY",20758,20818,75.0,""],["ANTALYA","HOLIDAY INN LARA",20788,20908,50.0,""],["ANTALYA","B BUSINESS",20758,20908,40.0,""],["ANTALYA","CROWNE PLAZA ANTALYA",20758,20787,62.0,""],["ANTALYA","CROWNE PLAZA ANTALYA",20788,20877,55.0,""],["ANTALYA","CROWNE PLAZA ANTALYA",20878,20908,62.0,""],["ISTANBUL","DOUBLE TREE AVCILAR",20758,20892,35.0,""],["ISTANBUL","BARCELO ISTANBUL",20758,20894,65.0,""],["ISTANBUL","GRAND HARILTON",20758,20908,27.5,""],["ISTANBUL","PARK INN RADISSON AIRPORT",20758,20908,27.5,""],["ISTANBUL","PARK INN RADISSON AIRPORT",20909,21122,30.0,""],["ISTANBUL","LIONEL HOTEL",20821,20938,35.0,""],["ISTANBUL","RAMADA TEKSTILKENT",20758,20908,27.5,""],["ISTANBUL","GONEN ISTANBUL YENIBOSNA",20697,20908,27.5,""],["ISTANBUL","WISH MORE BAYRAMPASA",20758,20908,35.0,""],["ISTANBUL","DOUBLE TREE PIYALEPASA",20758,20908,35.0,""],["ISTANBUL","WINDSOR BAYRAMPASA",20758,20908,32.5,""],["ISTANBUL","WYNDHAM GRAND EUROPE",20819,20908,45.0,""],["ISTANBUL","RAMADA MERTER",20758,20815,27.5,""],["ISTANBUL","RAMADA MERTER",20816,20819,37.5,""],["ISTANBUL","RAMADA MERTER",20820,20908,27.5,""],["ISTANBUL","RADISSON MERTER",20758,20905,37.5,""],["ISTANBUL","G HOTEL GUNESLI",20819,20908,32.5,""],["ISTANBUL","ELITE WORLD BASINEKSPRES",20697,20816,35.0,""],["ISTANBUL","LA QUINTA BY WYNDHAM BASINEKSPRES",20758,20908,30.0,""],["ISTANBUL","PULLMAN HOTEL",20758,20908,30.0,""],["ISTANBUL","TRYP BY WYNDHAM BASINEKSPRES",20758,20908,30.0,""],["CANAKKALE","KOLIN",20758,20908,48.0,""],["CANAKKALE","KOLIN",20909,21122,55.0,""],["CANAKKALE","PARION",20758,20816,50.0,""],["CANAKKALE","PARION",20820,20892,47.0,""],["CANAKKALE","DOUBLE TREE CANAKKALE",20819,20969,75.0,""],["CANAKKALE","DOUBLE TREE CANAKKALE",20970,21060,85.0,""],["CANAKKALE","DOUBLE TREE CANAKKALE",21062,21183,75.0,""],["AYVALIK","GRAND TEMIZEL",20727,20908,35.0,""],["KUSADASI","RAMADA SUITS",20758,20816,33.0,""],["KUSADASI","RAMADA SUITS",20817,20820,50.0,""],["KUSADASI","RAMADA SUITS",20821,20908,33.0,""],["KUSADASI","SEVEN FOR LIFE",20758,20817,32.0,""],["KUSADASI","SEVEN FOR LIFE",20819,20908,35.0,""],["KUSADASI","SEVEN FOR LIFE",20909,20938,40.0,""],["KUSADASI","SEVEN FOR LIFE",20939,20969,50.0,""],["KUSADASI","SEVEN FOR LIFE",20970,20999,62.0,""],["KUSADASI","SEVEN FOR LIFE",21000,21061,95.0,""],["KUSADASI","SEVEN FOR LIFE",21062,21091,77.0,""],["KUSADASI","SEVEN FOR LIFE",21092,21122,50.0,""],["KUSADASI","SEVEN FOR LIFE",21123,21182,35.0,""],["KUSADASI","SEVEN FOR LIFE",20758,20817,32.0,""],["KUSADASI","ODELIA RESORT",20758,20817,30.0,""],["KUSADASI","GRAND BELISH KUSADASI",20758,20817,30.0,""],["KUSADASI","ELITE WORLD KUSADASI",20758,20908,35.0,""],["KUSADASI","CHARISMA",20758,20908,50.0,""],["KUSADASI","CHARISMA",20909,20938,85.0,""],["KUSADASI","CHARISMA",20939,20969,105.0,""],["KUSADASI","CHARISMA",20970,20999,120.0,""],["KUSADASI","CHARISMA",21000,21061,155.0,""],["KUSADASI","CHARISMA",21062,21091,130.0,""],["KUSADASI","CHARISMA",21092,21122,110.0,""],["KUSADASI","QLUSIVE HOTEL",20758,20908,45.0,""],["IZMIR","KAYA THERMAL IZMIR",20819,21183,75.0,""],["PAMUKKALE","RICHMOND THERMAL",20758,20908,35.0,""],["PAMUKKALE","HIERAPARK THERMAL",20758,20908,40.0,""],["PAMUKKALE","HIERAPARK THERMAL",20909,21122,45.0,""],["PAMUKKALE","LYCUS RIVER",20758,20908,35.0,""],["PAMUKKALE","COLOSSAE THERMAL",20758,20908,35.0,""],["PAMUKKALE","ADEMPIRA",20758,20908,35.0,""],["PAMUKKALE","DOGA THERMAL",20758,21122,80.0,""],["PAMUKKALE","POLAT THERMAL",20758,20908,35.0,""],["PAMUKKALE","TRIPOLIS",20758,20908,30.0,""],["KONYA","GRAND KONYA",20758,20908,45.0,""],["KONYA","ANEMON KONYA",20758,20908,45.0,""],["KONYA","BAYIR DIOMAND",20758,20908,45.0,""],["KONYA","BAYIR DIOMAND",20909,21122,55.0,""],["KONYA","NOVOTEL KONYA",20819,20908,60.0,""],["KONYA","NOVOTEL KONYA",20909,21122,70.0,""],["ANKARA","NEWPARK",20758,20818,44.0,""],["ANKARA","İÇKALE",20819,20908,45.0,""],["ANKARA","İÇKALE",20909,21060,48.0,""],["ANKARA","RADISSON BLU ANKARA CANKAYA",20758,20818,40.0,""],["ANKARA","RADISSON BLU ANKARA CANKAYA",20819,20908,45.0,""],["ANKARA","CONNECT THERMAL",20758,20908,43.0,""],["KAPADOKYA","CRYSTAL KAYMAKLI",20758,20877,32.0,""],["KAPADOKYA","CROWNE PLAZA CAPPADOCIA",20758,20817,38.0,""],["KAPADOKYA","BARCELO CAPPADOCIA",20758,20894,45.0,""],["KAPADOKYA","SUHAN CAPPADOCIA",20758,20817,33.0,""],["KAPADOKYA","SUHAN CAPPADOCIA",20821,20969,35.0,""],["KAPADOKYA","PERISSIA",20758,20908,33.0,""],["KAPADOKYA","PERISSIA",20909,21122,41.0,""],["KAPADOKYA","MUSTAFA OTEL",20758,20772,48.0,""],["KAPADOKYA","ALERIA CAPPADOCIA",20758,20908,32.0,""],["KAPADOKYA CAVE","SUNAK CAVE",20758,20908,40.0,""],["FETHIYE","MARINA BOUTIQUE",20758,20908,50.0,""],["SAFRANBOLU","EBRULU KONAK",20758,20818,30.0,""],["SAFRANBOLU","BEYZADE KONAK",20758,20908,30.0,""],["SAFRANBOLU","ÇEŞMELİ KONAK",20758,20908,29.0,""],["BURSA","BAIA BURSA",20758,20818,40.0,""],["BURSA","BAIA BURSA",20819,20908,42.5,""]];
+var NOTES={"ISTANBUL||RAMADA TEKSTILKENT":["YILBAŞI DÖNEMİ DİKKAT"],"CANAKKALE||PARION":["Cuma- Cumartesi 55 usd"],"KAPADOKYA||BARCELO CAPPADOCIA":["24-31 ARALIK 75 USD PP"]};
+var DB=RAW.map(function(r){return{city:r[0],hotel:r[1],from:r[2],to:r[3],price:r[4],cur:r[5]}});
+var $=function(i){return document.getElementById(i)};
+var tr=function(s){return String(s==null?'':s).toLocaleLowerCase('tr').trim()};
+var fmt=function(n){return n.toLocaleString('tr-TR',{maximumFractionDigits:2})};
+var DAY=86400000;
+function dayFromISO(s){if(!s)return null;var p=s.split('-');return Date.UTC(+p[0],+p[1]-1,+p[2])/DAY}
+function dayStr(d){var x=new Date(d*DAY);return x.toLocaleDateString('tr-TR',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric'})}
+
+function loadData(){
+  var cities=[];
+  HOTELS.forEach(function(h){if(cities.indexOf(h[0])<0)cities.push(h[0])});
+  cities.sort(function(a,b){return a.localeCompare(b,'tr')});
+  $('c').innerHTML='<option value="">Şehir seçiniz</option>'+cities.map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>'}).join('');
+  $('c').disabled=false;
+  $('c').value='';
+  fillHotels();
+}
+function pr(v,c){return fmt(v)+(c?' '+c:'')}
+function nh(city,h){return (NOTES[city+'||'+h]||[]).map(function(n){return '<div style="font-size:12px;font-weight:400;color:var(--mu)">Not: '+esc(n)+'</div>'}).join('')}
+function fillHotels(){
+  var city=$('c').value,hs=[],hsel=$('h'),prev=hsel.value;
+  if(!city){
+    hsel.innerHTML='<option value="">Önce şehir seçiniz</option>';hsel.disabled=true;
+    $('m').innerHTML='<option value="">Önce şehir seçiniz</option>';$('m').disabled=true;
+    render();return;
+  }
+  HOTELS.forEach(function(r){if(r[0]===city)hs.push(r[1])});
+  hs.sort(function(a,b){return a.localeCompare(b,'tr')});
+  hsel.innerHTML=hs.length?'<option value="">Tüm oteller</option>'+hs.map(function(h){return '<option value="'+esc(h)+'">'+esc(h)+'</option>'}).join(''):'<option>Veri yok</option>';
+  hsel.disabled=!hs.length;
+  if(prev&&hs.indexOf(prev)>-1)hsel.value=prev;
+  fillMonths();
+}
+function fillMonths(){
+  var city=$('c').value,rs=DB.filter(function(r){return r.city===city}),ms=$('m'),prev=ms.value,mh='';
+  if(rs.length){
+    var mn=new Date(Math.min.apply(null,rs.map(function(r){return r.from}))*DAY),
+        mx=new Date(Math.max.apply(null,rs.map(function(r){return r.to}))*DAY),
+        y=mn.getUTCFullYear(),mo=mn.getUTCMonth(),c=0,Y=new Date().getFullYear();
+    while((y<mx.getUTCFullYear()||(y===mx.getUTCFullYear()&&mo<=mx.getUTCMonth()))&&c++<120){
+      if(y===Y||y===Y+1)mh+='<option value="'+y+'-'+mo+'">'+monthLabel(y,mo)+'</option>';
+      if(++mo>11){mo=0;y++}
+    }
+  }
+  ms.innerHTML=mh||'<option>Veri yok</option>';ms.disabled=!rs.length;
+  if(prev&&ms.querySelector('option[value="'+prev+'"]'))ms.value=prev;
+  render();
+}
+function shortDay(d){return new Date(d*DAY).toLocaleDateString('tr-TR',{timeZone:'UTC',day:'numeric',month:'short'})}
+function monthLabel(y,m){return new Date(Date.UTC(y,m,1)).toLocaleDateString('tr-TR',{month:'long',year:'numeric',timeZone:'UTC'})}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+
+// bir otel için dönem fiyatı: her gece için kaydı bul
+function quote(city,hotel,d1,d2){
+  var rs=DB.filter(function(r){return r.city===city&&r.hotel===hotel}),segs=[],miss=0;
+  for(var d=d1;d<d2;d++){
+    var r=rs.find(function(x){return d>=x.from&&d<=x.to});
+    if(!r){miss++;continue}
+    var last=segs[segs.length-1];
+    if(last&&last.price===r.price)last.end=d;else segs.push({from:d,end:d,price:r.price,cur:r.cur});
+  }
+  if(!segs.length)return{ok:false};
+  return{ok:true,miss:miss,avg:segs[0].price,cur:segs[0].cur,first:segs[0].from,changes:segs.slice(1)};
+}
+
+function render(){
+  var out=$('out');
+  if(!DB.length){out.innerHTML='';return}
+  if(!$('c').value){out.innerHTML='<div class="card mu">Başlamak için bir şehir seç.</div>';return}
+  var city=$('c').value,mv=$('m').value.split('-'),hotel=$('h').value;
+  if(mv.length<2){out.innerHTML='<div class="card mu">'+esc(city)+' için fiyat verisi yok.</div>';return}
+  var d1=Date.UTC(+mv[0],+mv[1],1)/DAY,d2=Date.UTC(+mv[0],+mv[1]+1,1)/DAY;
+  var hotels=[];HOTELS.forEach(function(r){if(r[0]===city)hotels.push(r[1])});
+  var list=hotels.map(function(h){return{h:h,q:quote(city,h,d1,d2)}});
+  var ok=list.filter(function(x){return x.q.ok}).sort(function(a,b){return a.q.avg-b.q.avg});
+  var no=list.filter(function(x){return !x.q.ok});
+  var sel=hotel?list.find(function(x){return x.h===hotel}):null;
+  var html='<div class="card"><span class="chip">'+esc(city)+'</span><span class="mu">'+monthLabel(+mv[0],+mv[1])+'</span>';
+  if(!ok.length){out.innerHTML=html+'<div class="mu" style="margin-top:8px">Bu ay için hiçbir otelde fiyat bulunamadı.</div></div>';return}
+  var lo=ok[0],hi=ok[ok.length-1],ref=(sel&&sel.q.ok)?sel:lo;
+  function tiers(x){
+    var t='';
+    x.q.changes.forEach(function(c){t+='<div style="font-size:12px;font-weight:400;color:var(--mu)">'+shortDay(c.from)+' tarihinden itibaren yeni fiyat: <b style="color:var(--tx)">'+pr(c.price,c.cur)+'</b></div>'});
+    if(x.q.first>d1)t='<div class="mu" style="font-size:12px;font-weight:400">Fiyat '+shortDay(x.q.first)+' tarihinden itibaren geçerli</div>'+t;
+    return t+nh(city,x.h);
+  }
+  if(sel){
+    html+='<div style="font-weight:600;margin-top:8px">'+esc(sel.h)+'</div>';
+    if(!sel.q.ok)html+='<div class="mu" style="margin-top:4px">Bu ay için fiyat bulunamadı.</div>'+nh(city,sel.h);
+    else{
+      var rk=ok.indexOf(sel)+1;
+      html+='<div class="big">'+pr(sel.q.avg,sel.q.cur)+' <span style="font-size:14px;font-weight:400" class="mu">/ kişi (DBL)</span></div>'+
+        '<div class="mu">'+ok.length+' otel arasında <b style="color:var(--tx)">'+rk+'. sıra</b>'+(rk===1?' (en ucuz)':'')+'</div>'+tiers(sel);
+    }
+  }else{
+    html+='<div class="mu" style="margin-top:8px;font-size:14px">En ucuz: <b style="color:var(--ac)">'+esc(lo.h)+' ('+pr(lo.q.avg,lo.q.cur)+')</b> · En pahalı: <b style="color:var(--tx)">'+esc(hi.h)+' ('+pr(hi.q.avg,hi.q.cur)+')</b></div>';
+  }
+  html+='</div>';
+  var useSel=sel&&sel.q.ok;
+  html+='<div class="card"><div style="font-weight:600;margin-bottom:8px">'+esc(city)+' — ucuzdan pahalıya (kişi başı, çift kişilik oda)</div><div class="tw"><table><thead><tr><th>#</th><th>Otel</th><th class="n">Fiyat</th><th class="n">'+(useSel?'Seçili otele göre':'En ucuza göre')+'</th></tr></thead><tbody>';
+  ok.forEach(function(x,i){
+    var diff=x.q.avg-ref.q.avg,pct=ref.q.avg?Math.abs(diff)/ref.q.avg*100:0,c;
+    if(x===ref)c='<span class="'+(useSel?'mu':'dn')+'">'+(useSel?'seçili':'en ucuz')+'</span>';
+    else if(diff===0)c='<span class="mu">aynı</span>';
+    else c='<span class="'+(diff>0?'up':'dn')+'">'+(diff>0?'+':'−')+fmt(Math.abs(diff))+'</span> <span class="mu">(%'+Math.round(pct)+')</span>';
+    var hl=sel?(x===sel):(i===0);
+    html+='<tr class="'+(hl?'sel':'')+'"><td>'+(i+1)+'</td><td>'+esc(x.h)+tiers(x)+'</td><td class="n">'+pr(x.q.avg,x.q.cur)+'</td><td class="n">'+c+'</td></tr>';
+  });
+  no.forEach(function(x){html+='<tr class="'+(x===sel?'sel':'')+'"><td class="mu">–</td><td class="mu">'+esc(x.h)+nh(city,x.h)+'</td><td class="n mu" colspan="2">fiyat yok</td></tr>'});
+  html+='</tbody></table></div><div class="mu" style="font-size:12px;margin-top:8px">Gösterilen fiyat ayın ilk geçerli fiyatıdır ve sıralama buna göre yapılır. Ay içinde fiyat değişiyorsa değişiklik tarihi ve yeni fiyat otelin altında not olarak yazılır.</div></div>';
+  out.innerHTML=html;
+}
+
+$('c').addEventListener('change',fillHotels);$('h').addEventListener('change',render);$('m').addEventListener('change',render);
+loadData();
+</script>
+</body>
+</html>
